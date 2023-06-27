@@ -1,0 +1,122 @@
+function job_failure(e)
+{
+var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();   // Current sheet of Google Sheets
+var range = sheet.getRange('A2:A1000');        // Range -> A Range object, representing the cell or range of cells that were edited.
+var range = sheet.setActiveRange(range);
+var row = range.getRow();     // Row of Current Sheet
+var column = range.getColumn();  // Column of Current Sheet
+var messsage,i,j,msg,error,error_date, error_time ;
+
+var fetch = "Subject:(" + '"Job Failed"' + ")";
+//var email_count = GmailApp.getInboxUnreadCount();
+var querry = GmailApp.search(fetch,0,10);
+//console.log(querry.length);
+
+
+for(j=0;j<querry.length;j++)
+{
+messsage = querry[j].getMessages()[0].getPlainBody(); // fetching message from mail
+//console.log(messsage);
+//i=-1;
+i = messsage.indexOf("Job Name:");
+if(i == -1) return "System not found";
+  msg="";
+i=i+10;
+
+while(messsage.charAt(i) != '\n')
+{
+  msg=msg+messsage.charAt(i);
+  i++;
+}
+
+
+if(msg == "gt_lap_rllnach1_gt_picking" || msg.includes("ccp") || msg.includes("eu"))
+{
+  querry[i].moveToTrash();
+  msg=""
+}
+else
+{
+i=-1;
+i = messsage.indexOf("|E        |");
+if(i == -1)
+{
+  i = messsage.indexOf("|A        |");
+}
+error="";
+if(i==-1)
+{
+  i=messsage.indexOf("|E0 |");
+  if(i== -1)
+  {
+    i=-1;
+  }
+  else
+  {
+    i=i+3;
+    while(messsage.charAt(i) != '\n')
+    {
+    error=error+messsage.charAt(i);
+    i++;
+    }
+  }
+    
+  
+}
+else
+{
+i=i+11
+while(messsage.charAt(i) != '\n')
+{
+  error=error+messsage.charAt(i);
+  i++;
+}
+}
+//console.log(msg);
+//console.log(error);
+
+//error_date = querry[j].getMessages()[0].getDate().toLocaleDateString();
+//error_time = querry[j].getMessages()[0].getDate().toLocaleTimeString();
+
+
+sheet.appendRow([msg,error]);
+
+
+//GmailApp.markMessageRead(querry[i].getMessages()[0]);
+//console.log(msg);
+}
+}
+removeDuplicates();
+/*var job_name,target_values,targetRange;
+targetRange=sheet.getRange('A2:A1000'); 
+target_values=targetRange.getValues();
+for(i=0;i<sheet.getLastRow();i++)
+{
+  job_name=target_values[i][0];
+  if()
+
+
+}*/
+//GmailApp.moveThreadsToTrash()
+}
+
+
+function removeDuplicates() {
+var sheet = SpreadsheetApp.getActiveSheet();
+var data = sheet.getDataRange().getValues();
+var newData = new Array();
+for(i in data){
+var row = data[i];
+var duplicate = false;
+for(j in newData){
+  if(row.join() == newData[j].join()){
+    duplicate = true;
+  }
+}
+if(!duplicate){
+  newData.push(row);
+}
+}
+sheet.clearContents();
+sheet.getRange(1, 1, newData.length, newData[0].length).setValues(newData);
+}
